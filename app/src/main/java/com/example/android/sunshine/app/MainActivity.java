@@ -1,7 +1,6 @@
 package com.example.android.sunshine.app;
 
 import android.os.Bundle;
-<<<<<<< HEAD
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -20,11 +19,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-=======
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
->>>>>>> slave
+
 
 
 public class MainActivity extends ActionBarActivity {
@@ -62,7 +60,6 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-<<<<<<< HEAD
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -151,6 +148,4 @@ public class MainActivity extends ActionBarActivity {
             return rootView;
         }
     }
-=======
->>>>>>> slave
 }
