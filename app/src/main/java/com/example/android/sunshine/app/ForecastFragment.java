@@ -1,9 +1,11 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,7 +37,6 @@ import java.util.Date;
  */
 public class ForecastFragment extends Fragment {
 
-    private ArrayList<String> weekForecast;
     private ArrayAdapter<String> mForecastAdapter;
 
     public ForecastFragment() {
@@ -51,16 +52,9 @@ public class ForecastFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        weekForecast = new ArrayList<>();
-        weekForecast.add("Today - Sunny - 88/63");
-        weekForecast.add("Tomorrow - Foggy - 70/46");
-        weekForecast.add("Weds - Cloudy - 72/63");
-        weekForecast.add("Thurs - Rainy - 64/51");
-        weekForecast.add("Fri - Foggy - 70/46");
-        weekForecast.add("Sat - Sunny - 76/68");
         mForecastAdapter = new ArrayAdapter<>(getActivity(),
                 R.layout.list_item_forecast, R.id.list_item_forecast_textview,
-                weekForecast);
+                new ArrayList<String>());
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ListView mListView = (ListView) rootView.findViewById(R.id.listview_forecast);
@@ -69,10 +63,6 @@ public class ForecastFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String forecast = mForecastAdapter.getItem(position);
-//                Log.i("Sunshine", mForecastAdapter.getItem(position));
-//                    Toast
-//                        .makeText(getActivity(), forecast, Toast.LENGTH_SHORT)
-//                        .show();
                 Intent launchDetailActivity = new Intent(getActivity(), DetailActivity.class).putExtra(Intent.EXTRA_TEXT, forecast);
                 startActivity(launchDetailActivity);
             }
@@ -81,8 +71,13 @@ public class ForecastFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // TODO Add your menu entries here
         inflater.inflate(R.menu.forecastfragment, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -91,7 +86,7 @@ public class ForecastFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            new FetchWeatherTask().execute("94043");
+            updateWeather();
             return true;
         } else if(id == R.id.action_settings){
             Intent intent = new Intent(getActivity(), SettingsActivity.class);
@@ -99,6 +94,13 @@ public class ForecastFragment extends Fragment {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateWeather() {
+        SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String userLocation = mSharedPreferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+
+        new FetchWeatherTask().execute(userLocation);
     }
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
@@ -212,6 +214,14 @@ public class ForecastFragment extends Fragment {
          */
         private String formatHighLows(double high, double low) {
 // For presentation, assume the user doesn't care about tenths of a degree.
+            SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String unitType = mSharedPreferences.getString(getString(R.string.pref_units_key), getString(R.string.pref_units_default));
+            if(unitType.equals(getString(R.string.pref_units_imperial))){
+                high = (high * 1.8) + 32;
+                low = (low * 1.8) + 32;
+            }else if(!unitType.equals(getString(R.string.pref_units_default))){
+                Log.d(LOG_TAG,"units not found");
+            }
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
 
